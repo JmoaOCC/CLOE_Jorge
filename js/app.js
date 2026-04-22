@@ -1,7 +1,7 @@
-import { initDB } from './storage/indexeddb.js';
-import { syncPending } from './services/sync-engine.js';
+import {initDB} from './storage/indexeddb.js';
+import {startSyncEngine} from './services/sync-engine.js';
+import {initAuth} from './services/auth.js';
 
 await initDB();
-await syncPending();
-
-console.log('JORGE 21K sync ready');
+await initAuth();
+await startSyncEngine();

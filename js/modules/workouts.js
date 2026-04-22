@@ -1,11 +1,8 @@
-import {saveWorkoutLocal} from '../storage/indexeddb.js';
-import {syncPending} from '../services/sync-engine.js';
+import {saveLocal} from '../storage/indexeddb.js';
 
 export async function addWorkout(data){
- const workout={
+ await saveLocal('workouts',{
    id:crypto.randomUUID(),
    ...data
- };
- await saveWorkoutLocal(workout);
- await syncPending();
+ });
 }

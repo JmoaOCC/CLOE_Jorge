@@ -1,12 +1,12 @@
-# JORGE 21K V1.2 Sync Layer Scaffold
+# JORGE 21K V1.3 Real Sync Edition
 
-Este ZIP incluye scaffold inicial para integrar:
-- Supabase
-- IndexedDB
-- Sync engine
-- Estructura modular
+Implementación extendida con sincronización real completa:
+- Entrenamientos sincronizados
+- Observaciones sincronizadas
+- Cola offline
+- Resolución básica de conflictos
+- Auth (magic link scaffold)
+- Dashboard sync status widget
+- SQL completo incluido
 
-Antes de usar:
-1. Sustituye TU_URL y TU_KEY en js/services/supabase.js
-2. Crea tablas SQL del documento de implementación
-3. Integra los módulos con tu V1 actual
+Configura Supabase URL/KEY y ejecuta schema.sql
