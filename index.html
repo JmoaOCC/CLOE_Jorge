@@ -1,179 +1,28 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>CLOE COACH DOCE</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-:root{
---bg:#0c1018;--surface:#151b28;--surface2:#1c2433;--border:#2b3448;
---accent:#c8f135;--accent2:#5b9cf6;--text:#eef4ff;--muted:#9aa7bd;
-}
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Syne,sans-serif}
-.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
-.sidebar{background:#101622;padding:24px;border-right:1px solid var(--border)}
-.brand{font-size:32px;font-weight:800}
-.mono{font-family:'DM Mono',monospace}
-.nav button{display:block;width:100%;margin:8px 0;background:var(--surface2);color:#fff;border:1px solid var(--border);padding:12px;border-radius:12px}
-.main{padding:28px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
-.card{background:var(--surface);padding:18px;border-radius:18px;border:1px solid var(--border)}
-.kpi{font-size:34px}
-.days{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
-.day{padding:10px 14px;border-radius:10px;background:var(--surface2);cursor:pointer}
-.day.active{background:var(--accent);color:#111}
-.exercise{background:var(--surface2);padding:14px;border-radius:14px;margin:12px 0}
-input,textarea,select{width:100%;background:#0f1624;color:#fff;border:1px solid var(--border);padding:12px;border-radius:10px;margin-top:8px}
-button.btn{background:var(--accent);color:#111;border:none;padding:10px 14px;border-radius:10px;font-weight:800}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{position:sticky;top:0}}
-</style>
+<meta charset="UTF-8">
+<title>CLOE COACH</title>
+<link rel="stylesheet" href="styles.css">
 </head>
-<body>
+
+<body class="dark">
+
 <div class="app">
-<aside class="sidebar">
-<div class="brand">C.L.O.E COACH</div>
-<div class="mono" style="color:var(--accent)">Programa DOCE Engine</div>
-<div class="nav">
-<button onclick="view('dashboard')">Dashboard</button>
-<button onclick="view('training')">Entrenamiento</button>
-<button onclick="view('running')">Running 16 semanas</button>
-<button onclick="view('nutrition')">Nutrición DOCE</button>
-<button onclick="view('checkin')">Check-in 14 días</button>
-<button onclick="generateReport()">Generar Resumen</button>
-</div>
-</aside>
 
-<main class="main">
-<div class="cards">
-<div class="card"><div class="mono">Adherencia</div><div class="kpi" id="score">82%</div></div>
-<div class="card"><div class="mono">Macros</div>2475 kcal<br>154P / 310HC / 69G</div>
-<div class="card"><div class="mono">Bloque</div>Semana 1 /16</div>
-<div class="card"><div class="mono">Objetivo</div>Media maratón 5:30</div>
+  <aside class="sidebar">
+    <h1>CLOE</h1>
+    <button onclick="loadModule('dashboard')">Dashboard</button>
+    <button onclick="loadModule('entrenamiento')">Entrenamiento</button>
+    <button onclick="loadModule('running')">Running</button>
+    <button onclick="loadModule('nutricion')">Nutrición</button>
+    <button onclick="loadModule('resumen')">Resumen</button>
+  </aside>
+
+  <main id="mainContent"></main>
+
 </div>
 
-<div class="days" id="days"></div>
-<div id="content"></div>
-</main>
-</div>
-
-<script>
-let day=0;
-const days=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-const workouts={
-0:[
-['Prensa','3x8','RIR2','https://youtube.com/results?search_query=leg+press+form'],
-['Press banca','3x8','RIR2','https://youtube.com/results?search_query=bench+press+form'],
-['Remo','3x10','RIR2','https://youtube.com/results?search_query=barbell+row+form']
-],
-2:[
-['Hack squat','3x8'],
-['Inclinado manc','3x10'],
-['Jalón','3x10']
-],
-4:[
-['Hip thrust','3x8'],
-['Face pull','3x15'],
-['Split squat','3x10']
-]
-};
-const runs={
-1:'30min Z2 + 4 strides\nIntervals: 30:00 easy',
-3:'6x400 @5:30/km rec200m\nIntervals: 6x400',
-5:'50 min tirada larga Z2'
-};
-
-function initDays(){
-document.getElementById('days').innerHTML=days.map((d,i)=>
-`<div class='day ${i==0?'active':''}' onclick='setDay(${i})'>${d}</div>`).join('')
-}
-function setDay(d){day=d;document.querySelectorAll('.day').forEach((e,i)=>e.classList.toggle('active',i===d)); render(current)}
-let current='dashboard';
-
-function view(v){current=v; render(v)}
-function render(v){
-let c=document.getElementById('content');
-
-if(v==='dashboard'){
-c.innerHTML=`
-<div class='card'>
-<h2>Checklist DOCE</h2>
-<label><input type='checkbox'> Pasos 8000+</label><br>
-<label><input type='checkbox'> Nutrición 80/20</label><br>
-<label><input type='checkbox'> Sueño 7h</label><br>
-<label><input type='checkbox'> Entreno hecho</label>
-</div>`;
-}
-
-if(v==='training'){
-let ex=workouts[day]||[];
-c.innerHTML='<div class=card><h2>Entreno del día</h2>'+
-(ex.length?ex.map(e=>`
-<div class='exercise'>
-<b>${e[0]}</b><br>
-Series/reps: ${e[1]}<br>
-Intensidad: ${e[2]||'RIR2'}<br>
-<button class='btn' onclick="window.open('${e[3]||'https://youtube.com'}')">Video</button>
-<div class='grid2'>
-<input placeholder='Peso usado'>
-<input placeholder='Reps hechas'>
-</div>
-</div>`).join(''):'Recovery / movilidad')+
-`<textarea placeholder='Observaciones del día'></textarea></div>`;
-}
-
-if(v==='running'){
-c.innerHTML=`<div class='card'><h2>Running día</h2>
-<div class='exercise'>${runs[day]||'Descanso o movilidad'}</div>
-<div class='card'><h3>Plan 16 semanas</h3>
-1-4 Base aeróbica<br>
-5-8 Volumen<br>
-9-12 Ritmo objetivo<br>
-13-16 Peaking
-</div></div>`;
-}
-
-if(v==='nutrition'){
-c.innerHTML=`
-<div class='card'>
-<h2>Nutrición por intercambios</h2>
-
-<h3>Comida</h3>
-Proteína
-<select><option>Pollo 180g</option><option>Pavo 180g</option><option>Salmón 150g</option></select>
-Carbo
-<select><option>Arroz 80g seco</option><option>Patata 300g</option></select>
-Grasas
-<select><option>AOVE 10g</option><option>Aguacate 50g</option></select>
-
-<h3>Merienda</h3>
-<select><option>Yogur + avena + plátano</option><option>Tortitas avena</option></select>
-
-<h3>Cena</h3>
-<select><option>Salmón + patata + verduras</option><option>Ternera + arroz + ensalada</option></select>
-
-</div>`;
-}
-
-if(v==='checkin'){
-c.innerHTML=`
-<div class='card'>
-<h2>Evaluación quincenal</h2>
-<input placeholder='Peso medio'>
-<input placeholder='Cintura'>
-<input placeholder='Energía 1-10'>
-<input placeholder='Hambre 1-10'>
-<textarea placeholder='Feedback subjetivo'></textarea>
-<br><br>
-<button class='btn'>Aplicar ajuste</button>
-</div>`;
-}
-}
-
-function generateReport(){
-alert('Genera resumen para semana 2 usando tus logs + CSV Intervals y me lo pasas.');
-}
-initDays(); render('dashboard');
-</script>
-</body></html>
+<script type="module" src="app.js"></script>
+</body>
+</html>

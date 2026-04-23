@@ -1,0 +1,13 @@
+body.dark {
+  background:#0f1115;
+  color:#fff;
+  font-family: 'Syne', sans-serif;
+}
+.sidebar {
+  width:200px;
+  float:left;
+}
+button {
+  display:block;
+  margin:10px;
+}
