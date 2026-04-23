@@ -1,66 +1,179 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CLOE_COACH v9</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CLOE COACH DOCE</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b1020;--c:#131b2e;--c2:#1a2438;--a:#fb923c}
-body{font-family:Syne,sans-serif;background:var(--bg);color:#fff;max-width:1200px;margin:auto;padding:18px}
-.card{background:var(--c);padding:18px;border-radius:18px;margin:14px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
-button{background:var(--a);border:none;padding:11px 14px;border-radius:12px;font-weight:800}
-input,textarea,select{width:100%;padding:12px;margin-top:8px;background:var(--c2);color:#fff;border:1px solid #2d3a50;border-radius:10px}
-.hidden{display:none}.pill{display:inline-block;background:var(--c2);padding:8px 12px;border-radius:10px;margin:4px}.active{background:var(--a);color:#111}
-</style></head><body>
-<div id=login>
-<h1>C.L.O.E COACH v9</h1>
-<div class=card><h2>Login</h2><input id=u value=jorge><input id=p type=password value=cloe2026><br><br><button onclick=login()>Entrar</button></div>
+:root{
+--bg:#0c1018;--surface:#151b28;--surface2:#1c2433;--border:#2b3448;
+--accent:#c8f135;--accent2:#5b9cf6;--text:#eef4ff;--muted:#9aa7bd;
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Syne,sans-serif}
+.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+.sidebar{background:#101622;padding:24px;border-right:1px solid var(--border)}
+.brand{font-size:32px;font-weight:800}
+.mono{font-family:'DM Mono',monospace}
+.nav button{display:block;width:100%;margin:8px 0;background:var(--surface2);color:#fff;border:1px solid var(--border);padding:12px;border-radius:12px}
+.main{padding:28px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.card{background:var(--surface);padding:18px;border-radius:18px;border:1px solid var(--border)}
+.kpi{font-size:34px}
+.days{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.day{padding:10px 14px;border-radius:10px;background:var(--surface2);cursor:pointer}
+.day.active{background:var(--accent);color:#111}
+.exercise{background:var(--surface2);padding:14px;border-radius:14px;margin:12px 0}
+input,textarea,select{width:100%;background:#0f1624;color:#fff;border:1px solid var(--border);padding:12px;border-radius:10px;margin-top:8px}
+button.btn{background:var(--accent);color:#111;border:none;padding:10px 14px;border-radius:10px;font-weight:800}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{position:sticky;top:0}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+<div class="brand">C.L.O.E COACH</div>
+<div class="mono" style="color:var(--accent)">Programa DOCE Engine</div>
+<div class="nav">
+<button onclick="view('dashboard')">Dashboard</button>
+<button onclick="view('training')">Entrenamiento</button>
+<button onclick="view('running')">Running 16 semanas</button>
+<button onclick="view('nutrition')">Nutrición DOCE</button>
+<button onclick="view('checkin')">Check-in 14 días</button>
+<button onclick="generateReport()">Generar Resumen</button>
 </div>
-<div id=app class=hidden>
-<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px"><h1>C.L.O.E COACH</h1>
-<div><button onclick=saveLocal()>Guardar</button> <button onclick=saveRepo()>Save Repo</button> <button onclick=pullRepo()>Pull</button> <button onclick=shareReport()>Compartir</button></div></div>
-<div class=grid>
-<div class=card><h3>Macros DOCE</h3>2475 kcal<br>154P / 310C /69G</div>
-<div class=card><h3>Adherencia</h3><div id=score>0/100</div></div>
-<div class=card><h3>Sprint</h3>Bloque 14 días</div></div>
-<div id=days></div>
-<div id=tabs></div>
-<div id=view></div>
+</aside>
+
+<main class="main">
+<div class="cards">
+<div class="card"><div class="mono">Adherencia</div><div class="kpi" id="score">82%</div></div>
+<div class="card"><div class="mono">Macros</div>2475 kcal<br>154P / 310HC / 69G</div>
+<div class="card"><div class="mono">Bloque</div>Semana 1 /16</div>
+<div class="card"><div class="mono">Objetivo</div>Media maratón 5:30</div>
 </div>
+
+<div class="days" id="days"></div>
+<div id="content"></div>
+</main>
+</div>
+
 <script>
-const AUTH_USER='jorge',AUTH_PASS='cloe2026';
-let db=JSON.parse(localStorage.getItem('cloe_v9')||'{}');
-let day=0,tab='dash';
-const DAYS=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-const W={0:['Prensa','Press banca','Remo'],2:['Hack squat','Inclinado','Jalón'],4:['Hip thrust','Banca','Face pull']};
-const R={1:'Base Z2 35 min',3:'6x400',5:'50 min tirada'};
-function login(){if(u.value===AUTH_USER&&p.value===AUTH_PASS){login.classList.add('hidden');app.classList.remove('hidden');init()}else alert('Error')}
-function init(){
-days.innerHTML=DAYS.map((d,i)=>`<button class='pill ${i==0?'active':''}' onclick='setDay(${i})'>${d}</button>`).join('');
-tabs.innerHTML=['dash','fuerza','run','nutri','checkin'].map((t,i)=>`<button class='pill ${i==0?'active':''}' onclick="setTab('${t}',this)">${t}</button>`).join('');
-render()
+let day=0;
+const days=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const workouts={
+0:[
+['Prensa','3x8','RIR2','https://youtube.com/results?search_query=leg+press+form'],
+['Press banca','3x8','RIR2','https://youtube.com/results?search_query=bench+press+form'],
+['Remo','3x10','RIR2','https://youtube.com/results?search_query=barbell+row+form']
+],
+2:[
+['Hack squat','3x8'],
+['Inclinado manc','3x10'],
+['Jalón','3x10']
+],
+4:[
+['Hip thrust','3x8'],
+['Face pull','3x15'],
+['Split squat','3x10']
+]
+};
+const runs={
+1:'30min Z2 + 4 strides\nIntervals: 30:00 easy',
+3:'6x400 @5:30/km rec200m\nIntervals: 6x400',
+5:'50 min tirada larga Z2'
+};
+
+function initDays(){
+document.getElementById('days').innerHTML=days.map((d,i)=>
+`<div class='day ${i==0?'active':''}' onclick='setDay(${i})'>${d}</div>`).join('')
 }
-function setDay(d){day=d;document.querySelectorAll('#days .pill').forEach((e,i)=>e.classList.toggle('active',i===d));render()}
-function setTab(t,el){tab=t;document.querySelectorAll('#tabs .pill').forEach(e=>e.classList.remove('active'));if(el)el.classList.add('active');render()}
-function k(n){return day+'_'+n}
-function saveLocal(){
-['peso','cintura','notes'].forEach(id=>{let el=document.getElementById(id); if(el)db[k(id)]=el.value;});
-localStorage.setItem('cloe_v9',JSON.stringify(db));calc();alert('Guardado')}
-function calc(){let s=0;['entreno','pasos','sueno','nutri','agua'].forEach(x=>{if(db[x])s+=20});score.innerText=s+'/100'}
-function render(){
-if(tab==='dash')view.innerHTML=`<div class=card><h2>Checklist</h2>
-<label><input type=checkbox onchange="db.entreno=this.checked;calc()"> Entreno</label><br>
-<label><input type=checkbox onchange="db.nutri=this.checked;calc()"> Nutrición</label><br>
-<label><input type=checkbox onchange="db.sueno=this.checked;calc()"> Sueño</label></div>`;
-if(tab==='fuerza')view.innerHTML=`<div class=card><h2>Fuerza</h2>${(W[day]||['Recovery']).map(e=>`<div class=card><b>${e}</b><br>3x8-10 RIR2<br><input placeholder='kg x reps'></div>`).join('')}</div>`;
-if(tab==='run')view.innerHTML=`<div class=card><h2>Running</h2>${R[day]||'Descanso / movilidad'}</div>`;
-if(tab==='nutri')view.innerHTML=`<div class=card><h2>Intercambios</h2>
-Proteína<select><option>Pollo 150g</option><option>Pavo 150g</option></select>
-Carbo<select><option>Arroz 60g</option><option>Patata 300g</option></select>
-Grasa<select><option>AOVE 10g</option><option>Aguacate 50g</option></select></div>`;
-if(tab==='checkin')view.innerHTML=`<div class=card><h2>Check-in 14 días</h2><input id=peso value='${db[k('peso')]||''}' placeholder='Peso'><input id=cintura value='${db[k('cintura')]||''}' placeholder='Cintura'><textarea id=notes>${db[k('notes')]||''}</textarea><br><br><button onclick='saveLocal()'>Guardar Check-in</button></div>`;
-calc()
+function setDay(d){day=d;document.querySelectorAll('.day').forEach((e,i)=>e.classList.toggle('active',i===d)); render(current)}
+let current='dashboard';
+
+function view(v){current=v; render(v)}
+function render(v){
+let c=document.getElementById('content');
+
+if(v==='dashboard'){
+c.innerHTML=`
+<div class='card'>
+<h2>Checklist DOCE</h2>
+<label><input type='checkbox'> Pasos 8000+</label><br>
+<label><input type='checkbox'> Nutrición 80/20</label><br>
+<label><input type='checkbox'> Sueño 7h</label><br>
+<label><input type='checkbox'> Entreno hecho</label>
+</div>`;
 }
-function reportText(){return 'Reporte CLOE COACH\n'+JSON.stringify(db,null,2)}
-async function shareReport(){if(navigator.share){await navigator.share({title:'Reporte',text:reportText()})}else alert(reportText())}
-function saveRepo(){alert('Configura GitHub sync según README incluido')}
-function pullRepo(){alert('Configura Pull según README incluido')}
-</script></body></html>
+
+if(v==='training'){
+let ex=workouts[day]||[];
+c.innerHTML='<div class=card><h2>Entreno del día</h2>'+
+(ex.length?ex.map(e=>`
+<div class='exercise'>
+<b>${e[0]}</b><br>
+Series/reps: ${e[1]}<br>
+Intensidad: ${e[2]||'RIR2'}<br>
+<button class='btn' onclick="window.open('${e[3]||'https://youtube.com'}')">Video</button>
+<div class='grid2'>
+<input placeholder='Peso usado'>
+<input placeholder='Reps hechas'>
+</div>
+</div>`).join(''):'Recovery / movilidad')+
+`<textarea placeholder='Observaciones del día'></textarea></div>`;
+}
+
+if(v==='running'){
+c.innerHTML=`<div class='card'><h2>Running día</h2>
+<div class='exercise'>${runs[day]||'Descanso o movilidad'}</div>
+<div class='card'><h3>Plan 16 semanas</h3>
+1-4 Base aeróbica<br>
+5-8 Volumen<br>
+9-12 Ritmo objetivo<br>
+13-16 Peaking
+</div></div>`;
+}
+
+if(v==='nutrition'){
+c.innerHTML=`
+<div class='card'>
+<h2>Nutrición por intercambios</h2>
+
+<h3>Comida</h3>
+Proteína
+<select><option>Pollo 180g</option><option>Pavo 180g</option><option>Salmón 150g</option></select>
+Carbo
+<select><option>Arroz 80g seco</option><option>Patata 300g</option></select>
+Grasas
+<select><option>AOVE 10g</option><option>Aguacate 50g</option></select>
+
+<h3>Merienda</h3>
+<select><option>Yogur + avena + plátano</option><option>Tortitas avena</option></select>
+
+<h3>Cena</h3>
+<select><option>Salmón + patata + verduras</option><option>Ternera + arroz + ensalada</option></select>
+
+</div>`;
+}
+
+if(v==='checkin'){
+c.innerHTML=`
+<div class='card'>
+<h2>Evaluación quincenal</h2>
+<input placeholder='Peso medio'>
+<input placeholder='Cintura'>
+<input placeholder='Energía 1-10'>
+<input placeholder='Hambre 1-10'>
+<textarea placeholder='Feedback subjetivo'></textarea>
+<br><br>
+<button class='btn'>Aplicar ajuste</button>
+</div>`;
+}
+}
+
+function generateReport(){
+alert('Genera resumen para semana 2 usando tus logs + CSV Intervals y me lo pasas.');
+}
+initDays(); render('dashboard');
+</script>
+</body></html>
