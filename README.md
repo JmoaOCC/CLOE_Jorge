@@ -1,20 +1,12 @@
-# CLOE_COACH GitHub Starter
+# CLOE_COACH v9 Evolved
 
-Contenido:
-- index.html (app base)
-- data/cloe_data.json
-- .github/workflows/save-data.yml
+Incluye:
+- App estilo Programa DOCE
+- Login básico
+- Fuerza + Running + Nutrición intercambios
+- Check-in 14 días
+- Compartir reporte móvil
+- Base para GitHub sync (README_SYNC.md)
 
-Pasos:
-1. Sube todo al repo GitHub.
-2. Activa GitHub Pages.
-3. Crea fine-grained token con permisos Contents RW y guárdalo.
-4. Sustituye en index.html:
-   OWNER
-   REPO
-   TOKEN
-5. Configura el workflow.
-
-Login demo:
-usuario: jorge
-password: cloe2026
+Credenciales demo:
+jorge / cloe2026

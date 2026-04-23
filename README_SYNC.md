@@ -1,0 +1,1 @@
+Ver README principal del chat para configurar GitHub Actions sync (Save Repo / Pull).

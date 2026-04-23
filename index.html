@@ -1,104 +1,66 @@
 <!doctype html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CLOE_COACH</title>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CLOE_COACH v9</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
-body{font-family:Arial,sans-serif;background:#0b1020;color:#fff;max-width:1100px;margin:auto;padding:20px}
-.card{background:#131b2e;padding:20px;border-radius:16px;margin:14px 0}
-button{padding:10px 14px;border:none;border-radius:10px;background:#fb923c;font-weight:bold}
-input,textarea{width:100%;padding:10px;margin-top:8px;background:#1a2438;color:white;border:1px solid #2d3a50;border-radius:10px}
-.hidden{display:none}
-</style>
-</head>
-<body>
-<div id="login">
-<h1>C.L.O.E COACH</h1>
-<div class="card">
-<h2>Login demo</h2>
-<input id="u" value="jorge">
-<input id="p" type="password" value="cloe2026">
-<button onclick="login()">Entrar</button>
+:root{--bg:#0b1020;--c:#131b2e;--c2:#1a2438;--a:#fb923c}
+body{font-family:Syne,sans-serif;background:var(--bg);color:#fff;max-width:1200px;margin:auto;padding:18px}
+.card{background:var(--c);padding:18px;border-radius:18px;margin:14px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+button{background:var(--a);border:none;padding:11px 14px;border-radius:12px;font-weight:800}
+input,textarea,select{width:100%;padding:12px;margin-top:8px;background:var(--c2);color:#fff;border:1px solid #2d3a50;border-radius:10px}
+.hidden{display:none}.pill{display:inline-block;background:var(--c2);padding:8px 12px;border-radius:10px;margin:4px}.active{background:var(--a);color:#111}
+</style></head><body>
+<div id=login>
+<h1>C.L.O.E COACH v9</h1>
+<div class=card><h2>Login</h2><input id=u value=jorge><input id=p type=password value=cloe2026><br><br><button onclick=login()>Entrar</button></div>
 </div>
+<div id=app class=hidden>
+<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px"><h1>C.L.O.E COACH</h1>
+<div><button onclick=saveLocal()>Guardar</button> <button onclick=saveRepo()>Save Repo</button> <button onclick=pullRepo()>Pull</button> <button onclick=shareReport()>Compartir</button></div></div>
+<div class=grid>
+<div class=card><h3>Macros DOCE</h3>2475 kcal<br>154P / 310C /69G</div>
+<div class=card><h3>Adherencia</h3><div id=score>0/100</div></div>
+<div class=card><h3>Sprint</h3>Bloque 14 días</div></div>
+<div id=days></div>
+<div id=tabs></div>
+<div id=view></div>
 </div>
-
-<div id="app" class="hidden">
-<h1>C.L.O.E COACH</h1>
-<button onclick="saveLocal()">Guardar local</button>
-<button onclick="saveRepo()">Save Repo</button>
-<button onclick="pullRepo()">Pull</button>
-
-<div class="card">
-<h2>Entreno</h2>
-<input id="bench" placeholder="Press banca">
-<textarea id="notes" placeholder="Observaciones"></textarea>
-</div>
-
-<div class="card">
-<h2>Nutrición</h2>
-<select id="meal">
-<option>Pollo + arroz</option>
-<option>Ternera + patata</option>
-</select>
-</div>
-
-<div class="card">
-<h2>Check-in 14 días</h2>
-<input id="peso" placeholder="Peso">
-<input id="cintura" placeholder="Cintura">
-</div>
-</div>
-
 <script>
-const AUTH_USER='jorge';
-const AUTH_PASS='cloe2026';
-let db=JSON.parse(localStorage.getItem('cloe_coach')||'{}');
-
-function login(){
-if(u.value===AUTH_USER && p.value===AUTH_PASS){
-loginDiv=document.getElementById('login');
-app=document.getElementById('app');
-loginDiv.classList.add('hidden');
-app.classList.remove('hidden');
-loadFields();
-}else alert('Credenciales incorrectas');
+const AUTH_USER='jorge',AUTH_PASS='cloe2026';
+let db=JSON.parse(localStorage.getItem('cloe_v9')||'{}');
+let day=0,tab='dash';
+const DAYS=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const W={0:['Prensa','Press banca','Remo'],2:['Hack squat','Inclinado','Jalón'],4:['Hip thrust','Banca','Face pull']};
+const R={1:'Base Z2 35 min',3:'6x400',5:'50 min tirada'};
+function login(){if(u.value===AUTH_USER&&p.value===AUTH_PASS){login.classList.add('hidden');app.classList.remove('hidden');init()}else alert('Error')}
+function init(){
+days.innerHTML=DAYS.map((d,i)=>`<button class='pill ${i==0?'active':''}' onclick='setDay(${i})'>${d}</button>`).join('');
+tabs.innerHTML=['dash','fuerza','run','nutri','checkin'].map((t,i)=>`<button class='pill ${i==0?'active':''}' onclick="setTab('${t}',this)">${t}</button>`).join('');
+render()
 }
-
+function setDay(d){day=d;document.querySelectorAll('#days .pill').forEach((e,i)=>e.classList.toggle('active',i===d));render()}
+function setTab(t,el){tab=t;document.querySelectorAll('#tabs .pill').forEach(e=>e.classList.remove('active'));if(el)el.classList.add('active');render()}
+function k(n){return day+'_'+n}
 function saveLocal(){
-db={
- bench:bench.value,
- notes:notes.value,
- meal:meal.value,
- peso:peso.value,
- cintura:cintura.value
-};
-localStorage.setItem('cloe_coach',JSON.stringify(db));
-alert('Guardado local');
+['peso','cintura','notes'].forEach(id=>{let el=document.getElementById(id); if(el)db[k(id)]=el.value;});
+localStorage.setItem('cloe_v9',JSON.stringify(db));calc();alert('Guardado')}
+function calc(){let s=0;['entreno','pasos','sueno','nutri','agua'].forEach(x=>{if(db[x])s+=20});score.innerText=s+'/100'}
+function render(){
+if(tab==='dash')view.innerHTML=`<div class=card><h2>Checklist</h2>
+<label><input type=checkbox onchange="db.entreno=this.checked;calc()"> Entreno</label><br>
+<label><input type=checkbox onchange="db.nutri=this.checked;calc()"> Nutrición</label><br>
+<label><input type=checkbox onchange="db.sueno=this.checked;calc()"> Sueño</label></div>`;
+if(tab==='fuerza')view.innerHTML=`<div class=card><h2>Fuerza</h2>${(W[day]||['Recovery']).map(e=>`<div class=card><b>${e}</b><br>3x8-10 RIR2<br><input placeholder='kg x reps'></div>`).join('')}</div>`;
+if(tab==='run')view.innerHTML=`<div class=card><h2>Running</h2>${R[day]||'Descanso / movilidad'}</div>`;
+if(tab==='nutri')view.innerHTML=`<div class=card><h2>Intercambios</h2>
+Proteína<select><option>Pollo 150g</option><option>Pavo 150g</option></select>
+Carbo<select><option>Arroz 60g</option><option>Patata 300g</option></select>
+Grasa<select><option>AOVE 10g</option><option>Aguacate 50g</option></select></div>`;
+if(tab==='checkin')view.innerHTML=`<div class=card><h2>Check-in 14 días</h2><input id=peso value='${db[k('peso')]||''}' placeholder='Peso'><input id=cintura value='${db[k('cintura')]||''}' placeholder='Cintura'><textarea id=notes>${db[k('notes')]||''}</textarea><br><br><button onclick='saveLocal()'>Guardar Check-in</button></div>`;
+calc()
 }
-
-function loadFields(){
-if(!db)return;
-bench.value=db.bench||'';
-notes.value=db.notes||'';
-meal.value=db.meal||meal.value;
-peso.value=db.peso||'';
-cintura.value=db.cintura||'';
-}
-
-/* Configura esto */
-const OWNER='TUUSUARIO';
-const REPO='CLOE_COACH';
-const TOKEN='PON_AQUI_TOKEN';
-
-async function saveRepo(){
-saveLocal();
-alert('Demo preparada. Configura GitHub token en index.html según README.');
-}
-
-async function pullRepo(){
-alert('Demo preparada. Configura GitHub sync según README.');
-}
-</script>
-</body>
-</html>
+function reportText(){return 'Reporte CLOE COACH\n'+JSON.stringify(db,null,2)}
+async function shareReport(){if(navigator.share){await navigator.share({title:'Reporte',text:reportText()})}else alert(reportText())}
+function saveRepo(){alert('Configura GitHub sync según README incluido')}
+function pullRepo(){alert('Configura Pull según README incluido')}
+</script></body></html>
